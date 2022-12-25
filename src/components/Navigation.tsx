@@ -38,6 +38,7 @@ const Navigation = ({ families }: NavigationProps) => {
           <Th length={20}>建物名等</Th>
           <Th length={5}>連名1</Th>
           <Th length={5}>連名2</Th>
+          <Th length={5}>連名3</Th>
         </Tr>
         {families.map((family, index) => (
           <Tr key={index}>
@@ -53,6 +54,7 @@ const Navigation = ({ families }: NavigationProps) => {
             <td contentEditable>{family.building}</td>
             <td contentEditable>{family.consecutiveName1}</td>
             <td contentEditable>{family.consecutiveName2}</td>
+            <td contentEditable>{family.consecutiveName3}</td>
           </Tr>
         ))}
       </tbody>

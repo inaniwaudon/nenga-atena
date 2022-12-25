@@ -9,9 +9,10 @@ export interface Family {
   building: string;
   consecutiveName1: string;
   consecutiveName2: string;
+  consecutiveName3: string;
 }
 
-const familyLabels = {
+const familyLabels: { [key in keyof Family]: string } = {
   enabled: '印刷',
   familyName: '姓',
   personalName: '名',
@@ -22,6 +23,7 @@ const familyLabels = {
   building: '建物名等',
   consecutiveName1: '連名1',
   consecutiveName2: '連名2',
+  consecutiveName3: '連名3',
 } as const;
 
 export const readCsv = (csv: string) => {
@@ -36,7 +38,7 @@ export const readCsv = (csv: string) => {
         (previous, current) => ({ [current[1]]: current[0], ...previous }),
         {},
       );
-      if (headers[x] === '印刷') {
+      if (headers[x] === '印刷' && bodies[x] === 'o') {
         family.enabled = true;
       } else if (headers[x] in reversedLabels) {
         family[reversedLabels[headers[x]]] = bodies[x];

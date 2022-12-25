@@ -77,7 +77,9 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
     context: CanvasRenderingContext2D,
   ) => {
     await loadFont();
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#000';
 
     // postal code
     for (let i = 0; i < family.postalCode.length; i++) {
@@ -119,11 +121,18 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
     }
 
     // name
-    const names = [family.personalName, family.consecutiveName1, family.consecutiveName2].filter(
-      (name) => name.length > 0,
-    );
+    const names = [
+      family.personalName,
+      family.consecutiveName1,
+      family.consecutiveName2,
+      family.consecutiveName3,
+    ].filter((name) => name.length > 0);
+    const maxPersonalNameLength = Math.max(...names.map((name) => name.length));
+    const familyName =
+      family.familyName + (family.familyName.length + maxPersonalNameLength < 4 ? '　' : '');
+
     for (let namei = 0; namei < names.length; namei++) {
-      const name = family.familyName + names[namei];
+      const name = (namei === 0 ? familyName : '　'.repeat(familyName.length)) + names[namei];
       const x = positions.name[0] - namei * lineHeights.name;
       for (let chari = 0; chari < name.length; chari++) {
         const y = positions.name[1] + chari * fontSizes.name;
@@ -136,6 +145,15 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
         );
         // ascender;
       }
+      const prefixY =
+        positions.name[1] + fontSizes.name * (familyName.length + maxPersonalNameLength);
+      drawPath(
+        '様',
+        mmToCanvasPx(fontSizes.name * 0.7),
+        mmToCanvasPx(x + (fontSizes.name * (1 - 0.7)) / 2),
+        mmToCanvasPx(prefixY),
+        context,
+      );
     }
   };
 

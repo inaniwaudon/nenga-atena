@@ -37,9 +37,15 @@ const PostCardWrapper = styled.div`
   left: 0;
 `;
 
+const PostCardNavigation = styled.nav`
+  margin: 10px 0 0 0;
+  display: flex;
+  justify-content: right;
+  gap: 10px;
+`;
+
 const Footer = styled.footer`
-  height: 16px;
-  line-height: 16px;
+  line-height: 24px;
   margin-top: 20px;
 `;
 
@@ -102,14 +108,22 @@ const App = () => {
       <Main>
         <PostCardWrapper>
           <PostCard families={selectedFamilies} selectedFamilyIndex={selectedFamilyIndex} />
-          <input type="button" value="前へ" onClick={setPreviousFamilyIndex} />
-          <input type="button" value="次へ" onClick={setNextFamilyIndex} />
+          <PostCardNavigation>
+            <span>
+              {selectedFamilyIndex + 1} / {selectedFamilies.length}
+            </span>
+            <input type="button" value="前へ" onClick={setPreviousFamilyIndex} />
+            <input type="button" value="次へ" onClick={setNextFamilyIndex} />
+            使用フォント
+          </PostCardNavigation>
         </PostCardWrapper>
         <Navigation families={families} />
       </Main>
       <Footer>
+        <small>入力された住所録はローカルにのみ保存され、サーバーには送信されません。</small>
+        <br />
         <small>
-          This application is released under MIT Liscense. Source code is available on{' '}
+          This application is released under MIT Liscense. The source code is available on{' '}
           <a href="https://github.com/inaniwaudon/nengajo-atena">GitHub</a>.
         </small>
       </Footer>
