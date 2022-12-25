@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Navigation from './Navigation';
 import PostCard from './PostCard';
 import { readCsv, saveFamiliesToLocalStorage, Family } from '../utils/data';
+import { loadFont } from '../utils/font';
 
 const Page = styled.div`
   margin: 30px;
@@ -61,6 +62,8 @@ const App = () => {
     };
   };
 
+  const normalize = () => {};
+
   const selectedFamilies = useMemo(() => families.filter((family) => family.enabled), [families]);
 
   const setPreviousFamilyIndex = () => {
@@ -83,7 +86,7 @@ const App = () => {
         setFamilies(familyArray);
       }
     }
-  });
+  }, []);
 
   return (
     <Page>
@@ -93,6 +96,7 @@ const App = () => {
           <label>
             CSV読み込み <input type="file" onChange={readCsvFile} />
           </label>
+          <input type="button" value="正規化" onClick={normalize} />
         </TopNavigation>
       </Header>
       <Main>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Family } from '../utils/data';
+import { drawPath, loadFont } from '../utils/font';
 
 const Card = styled.div<{ width: number; height: number }>`
   width: ${(props) => props.width}px;
@@ -42,7 +43,9 @@ interface PostCardProps {
 }
 
 const consistentAddress = (address: string) => {
-  return address.replace(/[A-Za-z0-9]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0xfee0));
+  return address
+    .replace(/[A-Za-z0-9]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0xfee0))
+    .replace(/-/g, '―');
 };
 
 const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
@@ -55,7 +58,7 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
   const positions: { [key in part]: [number, number] } = {
     postalCode: [44, 16],
     address: [86, 30],
-    name: [60, 50],
+    name: [60, 56],
   };
   const fontSizes: { [key in part]: number } = {
     postalCode: 8,
@@ -65,25 +68,22 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
   const lineHeights: { [key in part]: number } = {
     postalCode: 8,
     address: 6,
-    name: 12,
+    name: 13,
   };
 
-  const drawChar = (char: string, x: number, y: number, context: CanvasRenderingContext2D) => {
-    context.fillText(char, x, y);
-  };
-
-  const drawFamily = (
+  const drawFamily = async (
     family: Family,
     canvas: HTMLCanvasElement,
     context: CanvasRenderingContext2D,
   ) => {
+    await loadFont();
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     // postal code
-    context.font = `${mmToCanvasPx(fontSizes.postalCode)}px sans-serif`;
     for (let i = 0; i < family.postalCode.length; i++) {
-      drawChar(
+      drawPath(
         family.postalCode[i],
+        mmToCanvasPx(fontSizes.postalCode),
         mmToCanvasPx(positions.postalCode[0] + i * 7.4),
         mmToCanvasPx(positions.postalCode[1]),
         context,
@@ -91,21 +91,34 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
     }
 
     // address
-    context.font = `${mmToCanvasPx(fontSizes.address)}px sans-serif`;
-    const address = consistentAddress(
-      family.prefecture + family.municipalities + family.address + family.building,
-    );
-    for (let i = 0; i < address.length; i++) {
-      drawChar(
-        address[i],
-        mmToCanvasPx(positions.address[0]),
-        mmToCanvasPx(positions.address[1] + i * fontSizes.address),
-        context,
-      );
+    const address0 = consistentAddress(family.prefecture + family.municipalities);
+    const address1 = consistentAddress(family.address);
+    const address2 = consistentAddress(family.building);
+    const maxLength = 20;
+
+    const addressLines: string[] = [address0];
+    if (addressLines.at(-1)!.length + address1.length > maxLength) {
+      addressLines.push('');
+    }
+    addressLines[addressLines.length - 1] = addressLines.at(-1) + address1;
+    if (addressLines.at(-1)!.length + address2.length > maxLength) {
+      addressLines.push('');
+    }
+    addressLines[addressLines.length - 1] = addressLines.at(-1) + address2;
+
+    for (let linei = 0; linei < addressLines.length; linei++) {
+      for (let chari = 0; chari < addressLines[linei].length; chari++) {
+        drawPath(
+          addressLines[linei][chari],
+          mmToCanvasPx(fontSizes.address),
+          mmToCanvasPx(positions.address[0] - linei * lineHeights.address),
+          mmToCanvasPx(positions.address[1] + (chari + linei) * fontSizes.address),
+          context,
+        );
+      }
     }
 
     // name
-    context.font = `${mmToCanvasPx(fontSizes.name)}px sans-serif`;
     const names = [family.personalName, family.consecutiveName1, family.consecutiveName2].filter(
       (name) => name.length > 0,
     );
@@ -114,7 +127,13 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
       const x = positions.name[0] - namei * lineHeights.name;
       for (let chari = 0; chari < name.length; chari++) {
         const y = positions.name[1] + chari * fontSizes.name;
-        drawChar(name[chari], mmToCanvasPx(x), mmToCanvasPx(y), context);
+        drawPath(
+          name[chari],
+          mmToCanvasPx(fontSizes.name),
+          mmToCanvasPx(x),
+          mmToCanvasPx(y),
+          context,
+        );
         // ascender;
       }
     }
