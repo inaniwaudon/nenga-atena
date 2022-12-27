@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import PostCard from './PostCard';
+import { keyColor } from '../const/style';
 import { Family } from '../utils/data';
-import { Button } from '../utils/components';
+import { Button, InputBox } from '../utils/components';
 import { Part, FontSizes, LineHeights, Positions } from '../utils/style';
 
 const Navigation = styled.nav`
@@ -14,16 +15,16 @@ const Navigation = styled.nav`
 
 const PartListItem = styled.li<{ selected: boolean }>`
   line-height: 15px;
+  color: ${(props) => (props.selected ? '#fff' : keyColor)};
   font-size: 15px;
-  font-weight: ${(props) => (props.selected ? 'bold' : 'normal')};
   padding: 4px 10px 6px 10px;
-  background: ${(props) => (props.selected ? '#ddd' : '#fff')};
+  background: ${(props) => (props.selected ? keyColor : '#fff')};
 `;
 
 const PartList = styled.ul`
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
   padding: 0;
-  border: solid 1px #999;
+  border: solid 1px ${keyColor};
   border-radius: 4px;
   list-style: none;
   display: inline-flex;
@@ -48,40 +49,40 @@ const LeftLabel = styled.div`
   display: inline-block;
 `;
 
-const Input = styled.input<{ length: number }>`
+const Input = styled(InputBox)<{ length: number }>`
   width: ${(props) => props.length}em;
 `;
 
 interface PostCardDisplayProps {
   selectedFamilies: Family[];
   selectedFamilyIndex: number;
+  positions: Positions;
+  fontSizes: FontSizes;
+  lineHeights: LineHeights;
+  addressMaxChars: number;
   setPreviousFamilyIndex: () => void;
   setNextFamilyIndex: () => void;
+  setPositions: (value: Positions) => void;
+  setFontSizes: (value: FontSizes) => void;
+  setLineHeights: (value: LineHeights) => void;
+  setAddressMaxChars: (value: number) => void;
 }
 
 const PostCardDisplay = ({
   selectedFamilies,
   selectedFamilyIndex,
+  positions,
+  fontSizes,
+  lineHeights,
+  addressMaxChars,
   setPreviousFamilyIndex,
   setNextFamilyIndex,
+  setPositions,
+  setFontSizes,
+  setLineHeights,
+  setAddressMaxChars,
 }: PostCardDisplayProps) => {
   const [selectedPart, setSelectedPart] = useState<Part>('name');
-
-  const [positions, setPositions] = useState<Positions>({
-    postalCode: [44, 9],
-    address: [86, 28],
-    name: [60, 50],
-  });
-  const [fontSizes, setFontSizes] = useState<FontSizes>({
-    postalCode: 8,
-    address: 5,
-    name: 10,
-  });
-  const [lineHeights, setLineHeights] = useState<LineHeights>({
-    postalCode: 8,
-    address: 6,
-    name: 13,
-  });
 
   const partLabel: { part: Part; label: string }[] = [
     { part: 'name', label: '名前' },
@@ -107,6 +108,10 @@ const PostCardDisplay = ({
     setLineHeights(newLineHeights);
   };
 
+  const changeAddressMaxChars = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAddressMaxChars(parseFloat(e.target.value));
+  };
+
   return (
     <div>
       <PostCard
@@ -115,7 +120,9 @@ const PostCardDisplay = ({
         positions={positions}
         fontSizes={fontSizes}
         lineHeights={lineHeights}
+        addressMaxChars={addressMaxChars}
         selectedPart={selectedPart}
+        setSelectedPart={setSelectedPart}
       />
       <Navigation>
         <span>
@@ -138,9 +145,8 @@ const PostCardDisplay = ({
         </PartList>
         <Details>
           <DetailedLine>
-            <LeftLabel>位置</LeftLabel>
+            <LeftLabel>X 座標</LeftLabel>
             <label>
-              x:{' '}
               <Input
                 type="number"
                 length={4}
@@ -149,8 +155,10 @@ const PostCardDisplay = ({
               />{' '}
               mm
             </label>{' '}
+          </DetailedLine>
+          <DetailedLine>
+            <LeftLabel>Y 座標</LeftLabel>
             <label>
-              y:{' '}
               <Input
                 type="number"
                 length={4}
@@ -166,6 +174,7 @@ const PostCardDisplay = ({
               type="number"
               length={4}
               value={fontSizes[selectedPart]}
+              step={0.25}
               onChange={changeFontSize}
             />{' '}
             mm （{fontSizes[selectedPart] * 4} Q）
@@ -176,14 +185,22 @@ const PostCardDisplay = ({
               type="number"
               length={4}
               value={lineHeights[selectedPart]}
+              step={0.5}
               onChange={changeLineHeight}
             />{' '}
             mm（{lineHeights[selectedPart] * 4} Q）
           </DetailedLine>
-          <DetailedLine>
-            <LeftLabel>フォント</LeftLabel>
-            <Input type="text" length={4} />
-          </DetailedLine>
+          {selectedPart === 'address' && (
+            <DetailedLine>
+              <LeftLabel>最大字数</LeftLabel>
+              <Input
+                type="number"
+                length={4}
+                value={addressMaxChars}
+                onChange={changeAddressMaxChars}
+              />
+            </DetailedLine>
+          )}
         </Details>
       </div>
     </div>

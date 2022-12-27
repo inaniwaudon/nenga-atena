@@ -77,3 +77,40 @@ export const saveFamiliesToLocalStorage = (families: Family[]) => {
   const json = JSON.stringify(families);
   localStorage.setItem('families', json);
 };
+
+export const consistentAddress = (address: string) => {
+  return address
+    .replace(/[A-Za-z0-9]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0xfee0))
+    .replace(/-/g, '―');
+};
+
+export const isEmptyFamily = (family: Family) =>
+  !family.enabled &&
+  family.familyName.length === 0 &&
+  family.personalName.length === 0 &&
+  family.personalName.length === 0 &&
+  family.prefecture.length === 0 &&
+  family.municipalities.length === 0 &&
+  family.address.length === 0 &&
+  family.building.length === 0 &&
+  family.consecutiveName1.length === 0 &&
+  family.consecutiveName2.length === 0 &&
+  family.consecutiveName3.length === 0;
+
+export const fillFamilies = (families: Family[]) => {
+  const filteredFamilies = families.filter((family) => !isEmptyFamily(family));
+  const newFamily = [...new Array(1)].map<Family>(() => ({
+    enabled: false,
+    familyName: '',
+    personalName: '',
+    postalCode: '',
+    prefecture: '',
+    municipalities: '',
+    address: '',
+    building: '',
+    consecutiveName1: '',
+    consecutiveName2: '',
+    consecutiveName3: '',
+  }));
+  return [...filteredFamilies, ...newFamily];
+};

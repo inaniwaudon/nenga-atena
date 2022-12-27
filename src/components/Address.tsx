@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { prefectures } from '../const/prefectures';
-import { familyFields, familiesToCsv, Family } from '../utils/data';
+import { fontFamily } from '../const/style';
+import { familyFields, familiesToCsv, isEmptyFamily, Family } from '../utils/data';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -22,6 +23,7 @@ const Input = styled.input`
   width: 100%;
   height: 18px;
   font-size: 12px;
+  font-family: ${fontFamily};
   border: none;
   background: transparent;
 `;
@@ -34,27 +36,30 @@ const CautionTd = styled.td`
 const Textarea = styled.textarea`
   width: 100%;
   min-height: 400px;
+  font-family: ${fontFamily};
 `;
 
 interface NavigationProps {
   families: Family[];
   editsCsv: boolean;
-  setFamilies: (families: Family[]) => void;
-  setCsvData: (csv: string) => void;
+  displaysOnlyPrintable: boolean;
+  updateFamilies: (families: Family[]) => void;
+  updateCsvData: (csv: string) => void;
   setSelectedFamilyIndex: (index: number) => void;
 }
 
 const Address = ({
   families,
   editsCsv,
-  setFamilies,
-  setCsvData,
+  displaysOnlyPrintable,
+  updateFamilies,
+  updateCsvData,
   setSelectedFamilyIndex,
 }: NavigationProps) => {
   const changeEnabled = (e: React.ChangeEvent<HTMLInputElement>, lineIndex: number) => {
     const newFamilies = [...families];
     newFamilies[lineIndex].enabled = e.target.checked;
-    setFamilies(newFamilies);
+    updateFamilies(newFamilies);
     if (newFamilies[lineIndex].enabled) {
       setSelectedFamilyIndex(
         newFamilies.slice(0, lineIndex).filter((family) => family.enabled).length,
@@ -69,7 +74,7 @@ const Address = ({
   ) => {
     const newFamilies = [...families];
     (newFamilies[lineIndex][key] as string) = e.target.value ?? '';
-    setFamilies(newFamilies);
+    updateFamilies(newFamilies);
     if (newFamilies[lineIndex].enabled) {
       setSelectedFamilyIndex(
         newFamilies.slice(0, lineIndex).filter((family) => family.enabled).length,
@@ -86,6 +91,9 @@ const Address = ({
   };
 
   const textFields = familyFields.slice(1).map((field) => field.key);
+  const displayingFamilies = families.filter(
+    (family, index) => family.enabled || !displaysOnlyPrintable || index === families.length - 1,
+  );
 
   return (
     <Wrapper>
@@ -105,7 +113,7 @@ const Address = ({
               <Th length={5}>連名2</Th>
               <Th length={5}>連名3</Th>
             </Tr>
-            {families.map((family, index) => {
+            {displayingFamilies.map((family, index) => {
               const errors: string[] = [];
               // postal code
               if (!/^[0-9]{7}$/.test(family.postalCode)) {
@@ -137,7 +145,7 @@ const Address = ({
                       </td>
                     ))}
                   </Tr>
-                  {errors.length > 0 && (
+                  {errors.length > 0 && !isEmptyFamily(family) && (
                     <Tr>
                       <td></td>
                       <CautionTd colSpan={textFields.length}>{errors.join('、')}</CautionTd>
@@ -149,7 +157,9 @@ const Address = ({
           </tbody>
         </table>
       ) : (
-        <Textarea onChange={(e) => setCsvData(e.target.value)}>{familiesToCsv(families)}</Textarea>
+        <Textarea onChange={(e) => updateCsvData(e.target.value)}>
+          {familiesToCsv(families)}
+        </Textarea>
       )}
     </Wrapper>
   );

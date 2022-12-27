@@ -1,5 +1,11 @@
 import styled, { css } from 'styled-components';
-import { fontFamily, keyColor, subColor } from '../const/style';
+import {
+  cautionColor,
+  cautionHoverColor,
+  fontFamily,
+  keyColor,
+  keyHoverColor,
+} from '../const/style';
 
 const ButtonStyle = css`
   color: #fff;
@@ -14,7 +20,7 @@ const ButtonStyle = css`
   background: ${keyColor};
 
   &:hover {
-    background: ${subColor};
+    background: ${keyHoverColor};
   }
 `;
 
@@ -26,4 +32,19 @@ export const Button = styled.input`
 export const ButtonDiv = styled.div`
   ${ButtonStyle}
   display: inline-block;
+`;
+
+export const CautionButton = styled(Button)`
+  background: ${cautionColor};
+
+  &:hover {
+    background: ${cautionHoverColor};
+  }
+`;
+
+export const InputBox = styled.input`
+  font-family: ${fontFamily};
+  padding: 1px 4px 2px 4px;
+  border: solid 1px #999;
+  border-radius: 3px;
 `;
