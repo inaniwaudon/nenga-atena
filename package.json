@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack-dev-server",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npm run build && gh-pages -d build"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +33,7 @@
     "eslint-plugin-jsx-a11y": "^6.6.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "gh-pages": "^4.0.0",
     "prettier": "^2.7.1",
     "sass": "^1.53.0",
     "sass-loader": "^13.0.2",
