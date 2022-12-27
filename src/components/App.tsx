@@ -1,48 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import Navigation from './Navigation';
-import PostCard from './PostCard';
+import Header from './Header';
+import Address from './Address';
+import PostCardDisplay from './PostCardDisplay';
+import { fontFamily } from '../const/style';
 import { readCsv, saveFamiliesToLocalStorage, Family } from '../utils/data';
-import { loadFont } from '../utils/font';
 
 const Page = styled.div`
+  font-family: ${fontFamily};
   margin: 30px;
-`;
-
-const Header = styled.header`
-  height: 38px;
-  margin-bottom: 20px;
   display: flex;
-  gap: 10px;
+  gap: 30px;
 `;
 
-const TopNavigation = styled.nav`
-  margin: 6px 0;
+const Left = styled.div`
+  width: 300px;
 `;
 
-const Main = styled.div`
-  display: flex;
-  gap: 20px;
-`;
-
-const H1 = styled.h1`
-  font-size: 24px;
-  line-height: 24px;
-  margin: 0 10px 0 0;
-  padding: 6px 0 6px 0;
-`;
-
-const PostCardWrapper = styled.div`
-  position: sticky;
-  left: 0;
-`;
-
-const PostCardNavigation = styled.nav`
-  margin: 10px 0 0 0;
-  display: flex;
-  justify-content: right;
-  gap: 10px;
-`;
+const Right = styled.div``;
 
 const Footer = styled.footer`
   line-height: 24px;
@@ -52,23 +27,13 @@ const Footer = styled.footer`
 const App = () => {
   const [families, setFamilies] = useState<Family[]>([]);
   const [selectedFamilyIndex, setSelectedFamilyIndex] = useState(0);
+  const [editsCsv, setEditsCsv] = useState(false);
 
-  const readCsvFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length == 0) {
-      return;
-    }
-    const fileReader = new FileReader();
-    fileReader.readAsText(e.target.files[0]);
-    fileReader.onload = () => {
-      if (typeof fileReader.result === 'string') {
-        const data = readCsv(fileReader.result);
-        setFamilies(data);
-        saveFamiliesToLocalStorage(data);
-      }
-    };
+  const setCsvData = (csv: string) => {
+    const data = readCsv(csv);
+    setFamilies(data);
+    saveFamiliesToLocalStorage(data);
   };
-
-  const normalize = () => {};
 
   const selectedFamilies = useMemo(() => families.filter((family) => family.enabled), [families]);
 
@@ -96,37 +61,34 @@ const App = () => {
 
   return (
     <Page>
-      <Header>
-        <H1>年賀状宛名作成ツール</H1>
-        <TopNavigation>
-          <label>
-            CSV読み込み <input type="file" onChange={readCsvFile} />
-          </label>
-          <input type="button" value="正規化" onClick={normalize} />
-        </TopNavigation>
-      </Header>
-      <Main>
-        <PostCardWrapper>
-          <PostCard families={selectedFamilies} selectedFamilyIndex={selectedFamilyIndex} />
-          <PostCardNavigation>
-            <span>
-              {selectedFamilyIndex + 1} / {selectedFamilies.length}
-            </span>
-            <input type="button" value="前へ" onClick={setPreviousFamilyIndex} />
-            <input type="button" value="次へ" onClick={setNextFamilyIndex} />
-            使用フォント
-          </PostCardNavigation>
-        </PostCardWrapper>
-        <Navigation families={families} />
-      </Main>
-      <Footer>
-        <small>入力された住所録はローカルにのみ保存され、サーバーには送信されません。</small>
-        <br />
-        <small>
-          This application is released under MIT Liscense. The source code is available on{' '}
-          <a href="https://github.com/inaniwaudon/nengajo-atena">GitHub</a>.
-        </small>
-      </Footer>
+      <Left>
+        <PostCardDisplay
+          selectedFamilies={selectedFamilies}
+          selectedFamilyIndex={selectedFamilyIndex}
+          setPreviousFamilyIndex={setPreviousFamilyIndex}
+          setNextFamilyIndex={setNextFamilyIndex}
+        />
+      </Left>
+      <Right>
+        <Header editsCsv={editsCsv} setCsvData={setCsvData} setEditsCsv={setEditsCsv} />
+        <Address
+          families={families}
+          editsCsv={editsCsv}
+          setFamilies={setFamilies}
+          setCsvData={setCsvData}
+          setSelectedFamilyIndex={setSelectedFamilyIndex}
+        />
+        <Footer>
+          <small>入力された住所録はローカルにのみ保存され、サーバーには送信されません。</small>
+          <br />
+          <small>
+            Copyright (c) 2022 いなにわうどん. This software is released under{' '}
+            <a href="https://opensource.org/licenses/mit-license.php">the MIT Liscense</a>. The
+            source code is available on{' '}
+            <a href="https://github.com/inaniwaudon/nengajo-atena">GitHub</a>.
+          </small>
+        </Footer>
+      </Right>
     </Page>
   );
 };

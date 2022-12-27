@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { drawLineChars, mmToCanvasPx } from '../utils/canvas';
 import { Family } from '../utils/data';
-import { drawPath, loadFont } from '../utils/font';
+import { loadFont } from '../utils/font';
+import { FontSizes, LineHeights, Part, Positions } from '../utils/style';
 
-const Card = styled.div<{ width: number; height: number }>`
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+const Card = styled.div`
+  width: ${100 * 3}px;
+  height: ${148 * 3}px;
   border: solid 1px #999;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   position: relative;
@@ -20,6 +22,11 @@ const Canvas = styled.canvas`
   z-index: 1;
 `;
 
+const BorderCanvas = styled(Canvas)`
+  pointer-events: none;
+  z-index: 2;
+`;
+
 const BgImg = styled.img`
   width: 100%;
   height: 100%;
@@ -28,48 +35,35 @@ const BgImg = styled.img`
   left: 0;
 `;
 
-const dpi = 350;
-
-const mmToCanvasPx = (mm: number) => {
-  const canvasScale = dpi * 0.03937;
-  return mm * canvasScale;
-};
-
-type part = 'postalCode' | 'address' | 'name';
-
-interface PostCardProps {
-  families: Family[];
-  selectedFamilyIndex: number;
-}
-
 const consistentAddress = (address: string) => {
   return address
     .replace(/[A-Za-z0-9]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0xfee0))
     .replace(/-/g, '―');
 };
 
-const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
+interface PostCardProps {
+  families: Family[];
+  selectedFamilyIndex: number;
+  positions: Positions;
+  fontSizes: FontSizes;
+  lineHeights: LineHeights;
+  selectedPart: Part;
+}
+
+const PostCard = ({
+  families,
+  selectedFamilyIndex,
+  positions,
+  fontSizes,
+  lineHeights,
+  selectedPart,
+}: PostCardProps) => {
   const width = 100;
   const height = 148;
   const scale = 3;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const positions: { [key in part]: [number, number] } = {
-    postalCode: [44, 16],
-    address: [86, 30],
-    name: [60, 56],
-  };
-  const fontSizes: { [key in part]: number } = {
-    postalCode: 8,
-    address: 4,
-    name: 10,
-  };
-  const lineHeights: { [key in part]: number } = {
-    postalCode: 8,
-    address: 6,
-    name: 13,
-  };
+  const canvasBorderRef = useRef<HTMLCanvasElement>(null);
 
   const drawFamily = async (
     family: Family,
@@ -78,19 +72,22 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
   ) => {
     await loadFont();
     context.fillStyle = '#fff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    //context.fillRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = '#000';
 
+    const fontName = 'shipporiMedium';
+
     // postal code
-    for (let i = 0; i < family.postalCode.length; i++) {
-      drawPath(
-        family.postalCode[i],
-        mmToCanvasPx(fontSizes.postalCode),
-        mmToCanvasPx(positions.postalCode[0] + i * 7.4),
-        mmToCanvasPx(positions.postalCode[1]),
-        context,
-      );
-    }
+    drawLineChars(
+      family.postalCode,
+      positions.postalCode,
+      fontName,
+      fontSizes.postalCode,
+      7.4,
+      false,
+      context,
+    );
 
     // address
     const address0 = consistentAddress(family.prefecture + family.municipalities);
@@ -109,15 +106,18 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
     addressLines[addressLines.length - 1] = addressLines.at(-1) + address2;
 
     for (let linei = 0; linei < addressLines.length; linei++) {
-      for (let chari = 0; chari < addressLines[linei].length; chari++) {
-        drawPath(
-          addressLines[linei][chari],
-          mmToCanvasPx(fontSizes.address),
-          mmToCanvasPx(positions.address[0] - linei * lineHeights.address),
-          mmToCanvasPx(positions.address[1] + (chari + linei) * fontSizes.address),
-          context,
-        );
-      }
+      drawLineChars(
+        addressLines[linei],
+        [
+          positions.address[0] - lineHeights.address * linei,
+          positions.address[1] + fontSizes.address * linei,
+        ],
+        fontName,
+        fontSizes.address,
+        fontSizes.address,
+        true,
+        context,
+      );
     }
 
     // name
@@ -132,30 +132,56 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
       family.familyName + (family.familyName.length + maxPersonalNameLength < 4 ? '　' : '');
 
     for (let namei = 0; namei < names.length; namei++) {
-      const name = (namei === 0 ? familyName : '　'.repeat(familyName.length)) + names[namei];
       const x = positions.name[0] - namei * lineHeights.name;
-      for (let chari = 0; chari < name.length; chari++) {
-        const y = positions.name[1] + chari * fontSizes.name;
-        drawPath(
-          name[chari],
-          mmToCanvasPx(fontSizes.name),
-          mmToCanvasPx(x),
-          mmToCanvasPx(y),
-          context,
-        );
-        // ascender;
-      }
-      const prefixY =
-        positions.name[1] + fontSizes.name * (familyName.length + maxPersonalNameLength);
-      drawPath(
+      const name = consistentAddress(
+        (namei === 0 ? familyName : '　'.repeat(familyName.length)) + names[namei],
+      );
+      drawLineChars(
+        name,
+        [x, positions.name[1]],
+        fontName,
+        fontSizes.name,
+        fontSizes.name,
+        true,
+        context,
+      );
+      const suffixRatio = 0.7;
+      const suffixY =
+        positions.name[1] + fontSizes.name * (familyName.length + maxPersonalNameLength) + 4;
+      drawLineChars(
         '様',
-        mmToCanvasPx(fontSizes.name * 0.7),
-        mmToCanvasPx(x + (fontSizes.name * (1 - 0.7)) / 2),
-        mmToCanvasPx(prefixY),
+        [x - (fontSizes.name * (1.0 - suffixRatio)) / 2, suffixY],
+        fontName,
+        fontSizes.name * suffixRatio,
+        0,
+        true,
         context,
       );
     }
   };
+
+  useEffect(() => {
+    if (!canvasBorderRef.current) {
+      return;
+    }
+    const context = canvasBorderRef.current.getContext('2d');
+    if (!context) {
+      return;
+    }
+    context.clearRect(0, 0, canvasBorderRef.current.width, canvasBorderRef.current.height);
+    context.lineWidth = 4;
+
+    const parts: Part[] = ['name', 'address', 'postalCode'];
+    for (const part of parts) {
+      context.strokeStyle = selectedPart === part ? '#00f' : '#ccc';
+      context.beginPath();
+      context.moveTo(mmToCanvasPx(positions[part][0] - 4), mmToCanvasPx(positions[part][1]));
+      context.lineTo(mmToCanvasPx(positions[part][0] + 4), mmToCanvasPx(positions[part][1]));
+      context.moveTo(mmToCanvasPx(positions[part][0]), mmToCanvasPx(positions[part][1] - 4));
+      context.lineTo(mmToCanvasPx(positions[part][0]), mmToCanvasPx(positions[part][1] + 4));
+      context.stroke();
+    }
+  }, [selectedPart, positions, fontSizes, lineHeights]);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -167,10 +193,15 @@ const PostCard = ({ families, selectedFamilyIndex }: PostCardProps) => {
         }
       }
     }
-  }, [families, selectedFamilyIndex]);
+  }, [families, selectedFamilyIndex, positions, fontSizes, lineHeights]);
 
   return (
-    <Card width={width * scale} height={height * scale}>
+    <Card>
+      <BorderCanvas
+        width={mmToCanvasPx(width)}
+        height={mmToCanvasPx(height)}
+        ref={canvasBorderRef}
+      />
       <Canvas width={mmToCanvasPx(width)} height={mmToCanvasPx(height)} ref={canvasRef} />
       <BgImg src="https://www.wanichan.com/office365/mac/word/2019/11/images/postcard.png" />
     </Card>
