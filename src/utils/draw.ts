@@ -43,8 +43,7 @@ export const drawFamilyImage = async (
 ) => {
   await loadFont();
   context.fillStyle = '#fff';
-  //context.fillRect(0, 0, canvas.width, canvas.height);
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = '#000';
 
   const fontName = 'shipporiMedium';
