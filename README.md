@@ -13,7 +13,7 @@
 
 ## 使用方法
 
-https://inaniwaudon.github.io/nengajo-atena/ にアクセスします。
+https://inaniwaudon.github.io/nenga-atena/ にアクセスします。
 
 ### 住所録の編集
 ｢CSV を開く」からCSVデータを開くか、宛名データを直接入力します。  
