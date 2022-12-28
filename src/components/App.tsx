@@ -1,12 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
+import Description from './Description';
 import Header from './Header';
 import Address from './Address';
 import PostCardDisplay from './PostCardDisplay';
 import { fontFamily } from '../const/style';
-import { fillFamilies, readCsv, saveFamiliesToLocalStorage, Family } from '../utils/data';
+import {
+  fillFamilies,
+  readCsv,
+  saveCsv,
+  saveFamiliesToLocalStorage,
+  Family,
+} from '../utils/family';
 import { outputPdf } from '../utils/draw';
-import { FontSizes, LineHeights, Positions } from '../utils/style';
+import { saveStylesToLocalStorage, FontSizes, LineHeights, Positions } from '../utils/style';
 
 const Page = styled.div`
   font-size: 14px;
@@ -32,23 +39,13 @@ const Left = styled.div`
 
 const Right = styled.div``;
 
-const Description = styled.div`
-  line-height: 1.8;
-  color: #666;
-
-  ul {
-    padding: 0 20px;
-  }
-`;
-
-const Pre = styled.pre`
-  padding: 2px 10px 2px 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+const DescriptionWrapper = styled.div`
+  margin-top: 30px;
 `;
 
 const Footer = styled.footer`
   line-height: 24px;
-  margin-top: 20px;
+  margin-top: 30px;
 `;
 
 const App = () => {
@@ -59,9 +56,9 @@ const App = () => {
 
   // styles
   const [positions, setPositions] = useState<Positions>({
-    postalCode: [44, 9],
-    address: [88, 25],
-    name: [60, 50],
+    postalCode: [45, 11.75],
+    address: [90, 30],
+    name: [62, 48],
   });
   const [fontSizes, setFontSizes] = useState<FontSizes>({
     postalCode: 8,
@@ -74,7 +71,34 @@ const App = () => {
     name: 13,
   });
   const [addressMaxChars, setAddressMaxChars] = useState<number>(12);
+  const [postalCodeAdvance, setPostalCodeAdvance] = useState<number>(7);
 
+  const updatePositions = (value: Positions) => {
+    setPositions(value);
+    saveStylesToLocalStorage(value, fontSizes, lineHeights, addressMaxChars, postalCodeAdvance);
+  };
+
+  const updateFontSizes = (value: FontSizes) => {
+    setFontSizes(value);
+    saveStylesToLocalStorage(positions, value, lineHeights, addressMaxChars, postalCodeAdvance);
+  };
+
+  const updateLineHeights = (value: LineHeights) => {
+    setLineHeights(value);
+    saveStylesToLocalStorage(positions, fontSizes, value, addressMaxChars, postalCodeAdvance);
+  };
+
+  const updateAddressMaxChars = (value: number) => {
+    setAddressMaxChars(value);
+    saveStylesToLocalStorage(positions, fontSizes, lineHeights, value, postalCodeAdvance);
+  };
+
+  const updatePostalCodeAdvance = (value: number) => {
+    setPostalCodeAdvance(value);
+    saveStylesToLocalStorage(positions, fontSizes, lineHeights, addressMaxChars, value);
+  };
+
+  // family
   const updateFamilies = (families: Family[]) => {
     setFamilies(fillFamilies(families));
     saveFamiliesToLocalStorage(families);
@@ -83,6 +107,10 @@ const App = () => {
   const updateCsvData = (csv: string) => {
     const families = readCsv(csv);
     updateFamilies(families);
+  };
+
+  const saveCsvWrapper = () => {
+    saveCsv(families);
   };
 
   const selectedFamilies = useMemo(() => families.filter((family) => family.enabled), [families]);
@@ -100,16 +128,40 @@ const App = () => {
   };
 
   const outputPdfWrapper = () => {
-    outputPdf(selectedFamilies, positions, fontSizes, lineHeights, addressMaxChars);
+    outputPdf(
+      selectedFamilies,
+      positions,
+      fontSizes,
+      lineHeights,
+      addressMaxChars,
+      postalCodeAdvance,
+    );
   };
 
+  // restore
   useEffect(() => {
-    const json = localStorage.getItem('families');
+    const familiesJson = localStorage.getItem('families');
     updateFamilies([]);
-    if (json) {
-      const familyArray = JSON.parse(json);
+    if (familiesJson) {
+      const familyArray = JSON.parse(familiesJson);
       if (Array.isArray(familyArray)) {
         updateFamilies(familyArray);
+      }
+    }
+
+    const stylesJson = localStorage.getItem('styles');
+    if (stylesJson) {
+      const styles = JSON.parse(stylesJson);
+      if (
+        ['positions', 'fontSizes', 'lineHeights', 'addressMaxChars', 'postalCodeAdvance'].every(
+          (key) => key in styles,
+        )
+      ) {
+        setPositions(styles.positions);
+        setFontSizes(styles.fontSizes);
+        setLineHeights(styles.lineHeights);
+        setAddressMaxChars(styles.addressMaxChars);
+        setPostalCodeAdvance(styles.postalCodeAdvance);
       }
     }
   }, []);
@@ -124,6 +176,7 @@ const App = () => {
           setEditsCsv={setEditsCsv}
           setDisplaysOnlyPrintable={setDisplaysOnlyPrintable}
           outputPdf={outputPdfWrapper}
+          saveCsv={saveCsvWrapper}
         />
       </HeaderWrapper>
       <Main>
@@ -135,12 +188,14 @@ const App = () => {
             fontSizes={fontSizes}
             lineHeights={lineHeights}
             addressMaxChars={addressMaxChars}
+            postalCodeAdvance={postalCodeAdvance}
             setPreviousFamilyIndex={setPreviousFamilyIndex}
             setNextFamilyIndex={setNextFamilyIndex}
-            setPositions={setPositions}
-            setFontSizes={setFontSizes}
-            setLineHeights={setLineHeights}
-            setAddressMaxChars={setAddressMaxChars}
+            setPositions={updatePositions}
+            setFontSizes={updateFontSizes}
+            setLineHeights={updateLineHeights}
+            setAddressMaxChars={updateAddressMaxChars}
+            setPostalCodeAdvance={updatePostalCodeAdvance}
           />
         </Left>
         <Right>
@@ -152,33 +207,9 @@ const App = () => {
             updateCsvData={updateCsvData}
             setSelectedFamilyIndex={setSelectedFamilyIndex}
           />
-          <Description>
-            <ul>
-              <li>
-                宛名データを入力するか、｢CSV を開く」からCSVデータを開いて、住所録を作成しましょう。
-                <br />
-                読み込み可能な CSV データは以下の通りです。
-                <code>
-                  <Pre>
-                    印刷,姓,名,郵便番号,都道府県,市区町村,番地,建物名等,連名1,連名2,連名3{'\n'}
-                    o,年賀状,太郎,1008111,東京都,千代田区千代田,1-1,,花子,次郎,三郎
-                  </Pre>
-                </code>
-              </li>
-              <li>行にデータを入力することに新たな行が追加されます。空行は自動で削除されます。</li>
-              <li>
-                入力した住所録は自動保存されます。データはローカルにのみ保存され、サーバーには送信されません。
-              </li>
-              <li>
-                最左の「印刷」列にチェックを付けると、出力の対象に含まれます。左側のプレビューからも確認できます。
-              </li>
-              <li>
-                ｢PDF を出力」を押すと、宛名の組版結果を PDF
-                に出力します。処理には時間が掛かる場合があります。
-              </li>
-              <li>左側のプレビュー画像を右クリックすると、宛名画像を一枚ずつ保存できます。</li>
-            </ul>
-          </Description>
+          <DescriptionWrapper>
+            <Description />
+          </DescriptionWrapper>
           <Footer>
             <small>
               Copyright (c) 2022 いなにわうどん. This software is released under{' '}

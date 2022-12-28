@@ -30,6 +30,12 @@ const FileInput = styled.input`
   display: none;
 `;
 
+const VerticalLine = styled.div`
+  width: 1px;
+  height: 24px;
+  background: #ccc;
+`;
+
 interface HeaderProps {
   editsCsv: boolean;
   displaysOnlyPrintable: boolean;
@@ -37,6 +43,7 @@ interface HeaderProps {
   setEditsCsv: (value: boolean) => void;
   setDisplaysOnlyPrintable: (value: boolean) => void;
   outputPdf: () => void;
+  saveCsv: () => void;
 }
 
 export const Header = ({
@@ -46,6 +53,7 @@ export const Header = ({
   setEditsCsv,
   setDisplaysOnlyPrintable,
   outputPdf,
+  saveCsv,
 }: HeaderProps) => {
   const changeEditsCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditsCsv(e.target.checked);
@@ -80,21 +88,29 @@ export const Header = ({
       <H1>年賀状宛名作成ツール</H1>
       <Navigation>
         <ButtonLabel>
+          <Button type="button" value="PDF へ出力" onClick={outputPdf} />
+        </ButtonLabel>
+        <VerticalLine />
+        <ButtonLabel>
           <ButtonDiv>CSV を開く</ButtonDiv>
           <FileInput type="file" onChange={readCsvFile} />
         </ButtonLabel>
         <ButtonLabel>
-          <Button type="button" value="PDF へ出力" onClick={outputPdf} />
+          <Button type="button" value="CSV を保存" onClick={saveCsv} />
         </ButtonLabel>
         <ButtonLabel>
           <CautionButton type="button" value="住所録を削除" onClick={removeAllAddresses} />
         </ButtonLabel>
         <label>
-          <input type="checkbox" onChange={changeEditsCsv} />
+          <input type="checkbox" onChange={changeEditsCsv} checked={editsCsv} />
           CSV を直接編集
         </label>
         <label>
-          <input type="checkbox" onChange={changeDisplaysOnlyPrintable} />
+          <input
+            type="checkbox"
+            onChange={changeDisplaysOnlyPrintable}
+            checked={displaysOnlyPrintable}
+          />
           印刷行のみ表示
         </label>
       </Navigation>

@@ -1,5 +1,5 @@
 import { PDFDocument, PDFImage } from 'pdf-lib';
-import { consistentAddress, Family } from './data';
+import { consistentAddress, Family } from './family';
 import { drawPath, loadFont } from './font';
 import { FontSizes, LineHeights, Positions } from './style';
 
@@ -37,6 +37,7 @@ export const drawFamilyImage = async (
   fontSizes: FontSizes,
   lineHeights: LineHeights,
   addressMaxChars: number,
+  postalCodeAdvance: number,
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
 ) => {
@@ -54,7 +55,7 @@ export const drawFamilyImage = async (
     positions.postalCode,
     fontName,
     fontSizes.postalCode,
-    7.4,
+    postalCodeAdvance,
     false,
     context,
   );
@@ -136,6 +137,7 @@ export const outputPdf = async (
   fontSizes: FontSizes,
   lineHeights: LineHeights,
   addressMaxChars: number,
+  postalCodeAdvance: number,
 ) => {
   const widthPt = mmToPt(width);
   const heightPt = mmToPt(height);
@@ -157,6 +159,7 @@ export const outputPdf = async (
       fontSizes,
       lineHeights,
       addressMaxChars,
+      postalCodeAdvance,
       canvas,
       context,
     );

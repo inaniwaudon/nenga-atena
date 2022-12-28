@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { drawLineChars, mmToCanvasPx } from '../utils/draw';
-import { Family } from '../utils/data';
+import { Family } from '../utils/family';
 import { drawFamilyImage } from '../utils/draw';
 import { FontSizes, LineHeights, Part, Positions } from '../utils/style';
 
@@ -42,6 +42,7 @@ interface PostCardProps {
   fontSizes: FontSizes;
   lineHeights: LineHeights;
   addressMaxChars: number;
+  postalCodeAdvance: number;
   selectedPart: Part;
   setSelectedPart: (part: Part) => void;
 }
@@ -53,6 +54,7 @@ const PostCard = ({
   fontSizes,
   lineHeights,
   addressMaxChars,
+  postalCodeAdvance,
   selectedPart,
   setSelectedPart,
 }: PostCardProps) => {
@@ -119,11 +121,20 @@ const PostCard = ({
         fontSizes,
         lineHeights,
         addressMaxChars,
+        postalCodeAdvance,
         canvasRef.current,
         context,
       );
     }
-  }, [families, selectedFamilyIndex, positions, fontSizes, lineHeights, addressMaxChars]);
+  }, [
+    families,
+    selectedFamilyIndex,
+    positions,
+    fontSizes,
+    lineHeights,
+    addressMaxChars,
+    postalCodeAdvance,
+  ]);
 
   return (
     <Card>
@@ -138,7 +149,7 @@ const PostCard = ({
         ref={canvasRef}
         onMouseDown={onMouseDown}
       />
-      <BgImg src="https://www.wanichan.com/office365/mac/word/2019/11/images/postcard.png" />
+      <BgImg src="hagaki.png" />
     </Card>
   );
 };

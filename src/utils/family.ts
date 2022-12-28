@@ -38,7 +38,6 @@ export const readCsv = (csv: string) => {
   for (let y = 1; y < lines.length; y++) {
     const bodies = lines[y].split(',');
     const family: { [key in string]: any } = { enabled: false };
-    console.log(reversedLabels);
     for (let x = 0; x < Math.min(bodies.length, headers.length); x++) {
       if (headers[x] === '印刷') {
         family.enabled = bodies[x] === 'o';
@@ -46,9 +45,9 @@ export const readCsv = (csv: string) => {
         family[reversedLabels[headers[x]]] = bodies[x];
       }
     }
-    for (let label in familyFields) {
-      if (!(label in family)) {
-        family[label] = '';
+    for (let { key } of familyFields) {
+      if (!(key in family)) {
+        family[key] = '';
       }
     }
     data.push(family as any as Family);
@@ -73,6 +72,14 @@ export const familiesToCsv = (families: Family[]) => {
   return [header, ...body].join('\n');
 };
 
+export const saveCsv = (families: Family[]) => {
+  const blob = new Blob([familiesToCsv(families)], { type: 'text/csv' }); //配列に上記の文字列(str)を設定
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'address.csv';
+  link.click();
+};
+
 export const saveFamiliesToLocalStorage = (families: Family[]) => {
   const json = JSON.stringify(families);
   localStorage.setItem('families', json);
@@ -88,7 +95,7 @@ export const isEmptyFamily = (family: Family) =>
   !family.enabled &&
   family.familyName.length === 0 &&
   family.personalName.length === 0 &&
-  family.personalName.length === 0 &&
+  family.postalCode.length === 0 &&
   family.prefecture.length === 0 &&
   family.municipalities.length === 0 &&
   family.address.length === 0 &&

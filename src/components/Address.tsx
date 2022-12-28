@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Core as YubinBangoCore } from 'yubinbango-core2';
 import { prefectures } from '../const/prefectures';
 import { fontFamily } from '../const/style';
-import { familyFields, familiesToCsv, isEmptyFamily, Family } from '../utils/data';
+import { familyFields, familiesToCsv, isEmptyFamily, Family } from '../utils/family';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -90,6 +91,20 @@ const Address = ({
     }
   };
 
+  const predictPostalCode = (postalCode: string, lineIndex: number) => {
+    if (postalCode.length !== 7) {
+      return;
+    }
+    new YubinBangoCore(postalCode, (address: any) => {
+      if (address.region.length > 0 && address.locality.length > 0) {
+        const newFamilies = [...families];
+        newFamilies[lineIndex].prefecture = address.region;
+        newFamilies[lineIndex].municipalities = address.locality + address.street;
+        updateFamilies(newFamilies);
+      }
+    });
+  };
+
   const textFields = familyFields.slice(1).map((field) => field.key);
   const displayingFamilies = families.filter(
     (family, index) => family.enabled || !displaysOnlyPrintable || index === families.length - 1,
@@ -113,7 +128,7 @@ const Address = ({
               <Th length={5}>連名2</Th>
               <Th length={5}>連名3</Th>
             </Tr>
-            {displayingFamilies.map((family, index) => {
+            {displayingFamilies.map((family, lineIndex) => {
               const errors: string[] = [];
               // postal code
               if (!/^[0-9]{7}$/.test(family.postalCode)) {
@@ -125,22 +140,27 @@ const Address = ({
               }
 
               return (
-                <React.Fragment key={index}>
-                  <Tr key={index}>
+                <React.Fragment key={lineIndex}>
+                  <Tr key={lineIndex}>
                     <td>
                       <input
                         type="checkbox"
                         checked={family.enabled}
-                        onChange={(e) => changeEnabled(e, index)}
-                        onSelect={() => selectFamily(index)}
+                        onChange={(e) => changeEnabled(e, lineIndex)}
+                        onSelect={() => selectFamily(lineIndex)}
                       />
                     </td>
-                    {textFields.map((field) => (
+                    {textFields.map((field, index) => (
                       <td key={field}>
                         <Input
                           value={family[field] as string}
-                          onChange={(e) => changeTextField(e, index, field)}
-                          onSelect={() => selectFamily(index)}
+                          onChange={(e) => {
+                            changeTextField(e, lineIndex, field);
+                            if (field === 'postalCode') {
+                              predictPostalCode(e.target.value, lineIndex);
+                            }
+                          }}
+                          onSelect={() => selectFamily(lineIndex)}
                         />
                       </td>
                     ))}

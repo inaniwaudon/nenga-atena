@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import PostCard from './PostCard';
+import SwitchButton from './SwitchButton';
 import { keyColor } from '../const/style';
-import { Family } from '../utils/data';
+import { Family } from '../utils/family';
 import { Button, InputBox } from '../utils/components';
 import { Part, FontSizes, LineHeights, Positions } from '../utils/style';
 
@@ -11,28 +12,6 @@ const Navigation = styled.nav`
   display: flex;
   justify-content: right;
   gap: 10px;
-`;
-
-const PartListItem = styled.li<{ selected: boolean }>`
-  line-height: 15px;
-  color: ${(props) => (props.selected ? '#fff' : keyColor)};
-  font-size: 15px;
-  padding: 4px 10px 6px 10px;
-  background: ${(props) => (props.selected ? keyColor : '#fff')};
-`;
-
-const PartList = styled.ul`
-  margin: 0 0 6px 0;
-  padding: 0;
-  border: solid 1px ${keyColor};
-  border-radius: 4px;
-  list-style: none;
-  display: inline-flex;
-  overflow: hidden;
-
-  ${PartListItem} + ${PartListItem} {
-    border-left: solid 1px #ccc;
-  }
 `;
 
 const Details = styled.div`
@@ -60,12 +39,14 @@ interface PostCardDisplayProps {
   fontSizes: FontSizes;
   lineHeights: LineHeights;
   addressMaxChars: number;
+  postalCodeAdvance: number;
   setPreviousFamilyIndex: () => void;
   setNextFamilyIndex: () => void;
   setPositions: (value: Positions) => void;
   setFontSizes: (value: FontSizes) => void;
   setLineHeights: (value: LineHeights) => void;
   setAddressMaxChars: (value: number) => void;
+  setPostalCodeAdvance: (value: number) => void;
 }
 
 const PostCardDisplay = ({
@@ -75,19 +56,21 @@ const PostCardDisplay = ({
   fontSizes,
   lineHeights,
   addressMaxChars,
+  postalCodeAdvance,
   setPreviousFamilyIndex,
   setNextFamilyIndex,
   setPositions,
   setFontSizes,
   setLineHeights,
   setAddressMaxChars,
+  setPostalCodeAdvance,
 }: PostCardDisplayProps) => {
   const [selectedPart, setSelectedPart] = useState<Part>('name');
 
-  const partLabel: { part: Part; label: string }[] = [
-    { part: 'name', label: '名前' },
-    { part: 'address', label: '住所' },
-    { part: 'postalCode', label: '郵便番号' },
+  const partItems: { key: Part; label: string }[] = [
+    { key: 'name', label: '名前' },
+    { key: 'address', label: '住所' },
+    { key: 'postalCode', label: '郵便番号' },
   ];
 
   const changePosition = (e: React.ChangeEvent<HTMLInputElement>, x: boolean) => {
@@ -109,7 +92,11 @@ const PostCardDisplay = ({
   };
 
   const changeAddressMaxChars = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddressMaxChars(parseFloat(e.target.value));
+    setAddressMaxChars(parseInt(e.target.value));
+  };
+
+  const changePostalCodeAdvance = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPostalCodeAdvance(parseFloat(e.target.value));
   };
 
   return (
@@ -121,6 +108,7 @@ const PostCardDisplay = ({
         fontSizes={fontSizes}
         lineHeights={lineHeights}
         addressMaxChars={addressMaxChars}
+        postalCodeAdvance={postalCodeAdvance}
         selectedPart={selectedPart}
         setSelectedPart={setSelectedPart}
       />
@@ -132,17 +120,11 @@ const PostCardDisplay = ({
         <Button type="button" value="次へ" onClick={setNextFamilyIndex} />
       </Navigation>
       <div>
-        <PartList>
-          {partLabel.map(({ part, label }) => (
-            <PartListItem
-              selected={selectedPart === part}
-              key={part}
-              onClick={() => setSelectedPart(part)}
-            >
-              {label}
-            </PartListItem>
-          ))}
-        </PartList>
+        <SwitchButton<Part>
+          items={partItems}
+          selectedItem={selectedPart}
+          setSelectedItem={setSelectedPart}
+        />
         <Details>
           <DetailedLine>
             <LeftLabel>X 座標</LeftLabel>
@@ -151,6 +133,7 @@ const PostCardDisplay = ({
                 type="number"
                 length={4}
                 value={positions[selectedPart][0]}
+                step={0.25}
                 onChange={(e) => changePosition(e, true)}
               />{' '}
               mm
@@ -163,6 +146,7 @@ const PostCardDisplay = ({
                 type="number"
                 length={4}
                 value={positions[selectedPart][1]}
+                step={0.25}
                 onChange={(e) => changePosition(e, false)}
               />{' '}
               mm
@@ -199,6 +183,19 @@ const PostCardDisplay = ({
                 value={addressMaxChars}
                 onChange={changeAddressMaxChars}
               />
+            </DetailedLine>
+          )}
+          {selectedPart === 'postalCode' && (
+            <DetailedLine>
+              <LeftLabel>字送り</LeftLabel>
+              <Input
+                type="number"
+                length={4}
+                value={postalCodeAdvance}
+                step={0.5}
+                onChange={changePostalCodeAdvance}
+              />{' '}
+              mm（{postalCodeAdvance * 4} Q）
             </DetailedLine>
           )}
         </Details>
