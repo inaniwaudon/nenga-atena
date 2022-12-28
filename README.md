@@ -39,7 +39,7 @@ o,年賀状,太郎,1008111,東京都,千代田区千代田,1-1,,花子,次郎,�
 
 ```bash
 npm install  # install
-npm dev      # start on localhost:808
+npm run dev  # start on localhost:8080
 ```
 
 ## ライセンス
