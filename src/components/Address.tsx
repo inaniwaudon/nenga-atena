@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Core as YubinBangoCore } from 'yubinbango-core2';
+import { YubinBangoCore } from 'yubinbango-core-strict';
 import { prefectures } from '../const/prefectures';
 import { fontFamily } from '../const/style';
 import { familyFields, familiesToCsv, isEmptyFamily, Family } from '../utils/family';
