@@ -20,8 +20,12 @@ Temporary Items
 
 # Node
 node_modules
-.yarn/
-!.yarn/releases/*
+dist
+
+# yarn
+.yarn/*
+!.yarn/releases
+yarn-error.log
 
 # Visual Studio Code
 .vscode/*
