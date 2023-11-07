@@ -95,4 +95,5 @@ const Left = ({
     </Wrapper>
   );
 };
+
 export default Left;
