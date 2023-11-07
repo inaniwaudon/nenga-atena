@@ -45,7 +45,7 @@ npm run dev  # start on localhost:8080
 ## ライセンス
 
 MIT ライセンスに従って自由に使用・改変・再配布等を行えます。  
-Copyright (c) 2022 いなにわうどん.
+Copyright (c) 2022–2023 いなにわうどん.
 This software is released under [the MIT Liscense](https://opensource.org/licenses/mit-license.php).
 
 本ソフトウェアでは表示フォントに「[しっぽり明朝](https://fontdasu.com/shippori-mincho/)」を使用しています。

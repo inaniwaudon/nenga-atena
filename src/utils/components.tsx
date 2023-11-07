@@ -14,7 +14,7 @@ const ButtonStyle = css`
   font-size: 14px;
   padding: 6px 8px 8px 8px;
   border: none;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
   box-sizing: content-box;
   background: ${keyColor};

@@ -7,6 +7,7 @@ const PartListItem = styled.li<{ selected: boolean }>`
   color: ${(props) => (props.selected ? '#fff' : keyColor)};
   font-size: 15px;
   padding: 5px 10px 7px 10px;
+  cursor: pointer;
   background: ${(props) => (props.selected ? keyColor : '#fff')};
 `;
 

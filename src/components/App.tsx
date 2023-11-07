@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Description from './Description';
 import Header from './Header';
 import Address from './Address';
-import PostCardDisplay from './PostCardDisplay';
+import Left from './Left';
 import { fontFamily } from '../const/style';
 import {
   fillFamilies,
@@ -33,7 +33,7 @@ const Main = styled.main`
   gap: 30px;
 `;
 
-const Left = styled.div`
+const LeftWrapper = styled.div`
   width: 300px;
 `;
 
@@ -180,8 +180,8 @@ const App = () => {
         />
       </HeaderWrapper>
       <Main>
-        <Left>
-          <PostCardDisplay
+        <LeftWrapper>
+          <Left
             selectedFamilies={selectedFamilies}
             selectedFamilyIndex={selectedFamilyIndex}
             positions={positions}
@@ -197,7 +197,7 @@ const App = () => {
             setAddressMaxChars={updateAddressMaxChars}
             setPostalCodeAdvance={updatePostalCodeAdvance}
           />
-        </Left>
+        </LeftWrapper>
         <Right>
           <Address
             families={families}
@@ -212,7 +212,7 @@ const App = () => {
           </DescriptionWrapper>
           <Footer>
             <small>
-              Copyright (c) 2022 いなにわうどん. This software is released under{' '}
+              Copyright (c) 2022–2023 いなにわうどん. This software is released under{' '}
               <a href="https://opensource.org/licenses/mit-license.php">the MIT Liscense</a>. The
               source code is available on{' '}
               <a href="https://github.com/inaniwaudon/nengajo-atena">GitHub</a>.
