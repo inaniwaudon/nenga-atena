@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "lib": ["es2022"],
     "jsx": "react",
     "module": "commonjs",
     "outDir": "./dist/",
@@ -12,7 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+  },
+  "exclude": ["node_modules"]
 }

@@ -8,8 +8,7 @@ import { FontSizes, LineHeights, Part, Positions } from '../utils/style';
 const Card = styled.div`
   width: ${100 * 3}px;
   height: ${148 * 3}px;
-  border: solid 1px #999;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
   position: relative;
 `;
 
